@@ -3,7 +3,11 @@
 pub mod marshal;
 pub mod tpm;
 pub mod types;
+
+// Command modules
+// TODO: This is going to be annoying for every command. Maybe group them?
 mod startup;
+mod get_capability;
 
 use crate::marshal::*;
 use crate::types::*;

@@ -80,11 +80,51 @@ pub fn unmarshal_startup_type(buffer: &[u8], offset: &mut usize) -> Result<Start
     }
 }
 
+pub fn unmarshal_capability(
+    buffer: &[u8],
+    offset: &mut usize,
+) -> Result<TpmCapability, TpmError> {
+    match unmarshal_u32(buffer, offset) {
+        Ok(capability) => {
+            let cc = TpmCapability::from(capability);
+            match cc {
+                TpmCapability::Unknown => Err(TpmError {
+                    // TODO: Some other code
+                    rc: TpmRc::CommandCode,
+                }),
+                _ => Ok(cc),
+            }
+        }
+        Err(e) => Err(e),
+    }
+}
+
 pub fn unmarshal_startup_args(buffer: &[u8], offset: &mut usize) -> Result<StartupArgs, TpmError> {
     match unmarshal_startup_type(buffer, offset) {
         Ok(su_type) => Ok(StartupArgs { su_type }),
         Err(e) => Err(e),
     }
+}
+
+pub fn unmarshal_get_capability_args(buffer: &[u8], offset: &mut usize) -> Result<GetCapabilityArgs, TpmError> {
+    let mut args = GetCapabilityArgs::default();
+    args.cap = match unmarshal_capability(buffer, offset) {
+        Ok(cap) => cap,
+        Err(e) => return Err(e),
+    };
+
+    args.property = match unmarshal_u32(buffer, offset) {
+        Ok(prop) => prop,
+        Err(e) => return Err(e),
+
+    };
+
+    args.property_count = match unmarshal_u32(buffer, offset) {
+        Ok(count) => count,
+        Err(e) => return Err(e),
+    };
+
+    Ok(args)
 }
 
 pub fn unmarshal_command_header(
