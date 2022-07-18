@@ -1,8 +1,8 @@
 #![no_std]
 
-mod marshal;
-mod types;
-mod tpm;
+pub mod marshal;
+pub mod tpm;
+pub mod types;
 mod startup;
 
 use crate::marshal::*;

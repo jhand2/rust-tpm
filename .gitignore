@@ -1,2 +1,6 @@
 **/target
 **/.*.swp
+tpm-tests
+
+client/go.sum
+client/main.go
