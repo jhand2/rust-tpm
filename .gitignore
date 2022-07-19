@@ -3,4 +3,4 @@
 tpm-tests
 
 client/go.sum
-client/main.go
+client/main
