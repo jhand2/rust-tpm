@@ -1,4 +1,4 @@
-use core::fmt::{Display, Formatter, Error};
+use core::fmt::{Display, Error, Formatter};
 
 pub struct TpmError {
     pub rc: TpmRc,
@@ -17,13 +17,16 @@ impl Display for TpmError {
 pub enum TpmRc {
     Success = 0x0,
     BadTag = 0x1E,
+    Value = 0x84,
     Insufficient = 0x9A,
     Initialize = 0x100,
     CommandCode = 0x143,
 }
 
 impl Default for TpmRc {
-    fn default() -> Self {TpmRc::Success}
+    fn default() -> Self {
+        TpmRc::Success
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -35,7 +38,9 @@ pub enum TpmCommandCode {
 }
 
 impl Default for TpmCommandCode {
-    fn default() -> Self {TpmCommandCode::Unknown}
+    fn default() -> Self {
+        TpmCommandCode::Unknown
+    }
 }
 
 impl From<u32> for TpmCommandCode {
@@ -57,7 +62,9 @@ pub enum TpmCommandTag {
 }
 
 impl Default for TpmCommandTag {
-    fn default() -> Self {TpmCommandTag::Unknown}
+    fn default() -> Self {
+        TpmCommandTag::Unknown
+    }
 }
 
 impl From<u16> for TpmCommandTag {
@@ -79,7 +86,9 @@ pub enum StartupType {
 }
 
 impl Default for StartupType {
-    fn default() -> Self {StartupType::Unknown}
+    fn default() -> Self {
+        StartupType::Unknown
+    }
 }
 
 impl From<u16> for StartupType {
@@ -109,7 +118,7 @@ pub struct ResponseHeader {
 }
 
 // TODO: Calculate this like mstpm does
-const MAX_TPM_PROPERTIES: usize = 8;
+pub const MAX_TPM_PROPERTIES: usize = 8;
 
 #[repr(u32)]
 #[derive(Clone, Copy)]
@@ -119,7 +128,9 @@ pub enum TpmPt {
 }
 
 impl Default for TpmPt {
-    fn default() -> Self {TpmPt::Unknown}
+    fn default() -> Self {
+        TpmPt::Unknown
+    }
 }
 
 impl From<u32> for TpmPt {
@@ -131,14 +142,16 @@ impl From<u32> for TpmPt {
     }
 }
 
-#[repr(u32)]
+#[derive(Clone, Copy)]
 pub enum TpmCapability {
     TpmProperty = 0x6,
     Unknown,
 }
 
 impl Default for TpmCapability {
-    fn default() -> Self {TpmCapability::Unknown}
+    fn default() -> Self {
+        TpmCapability::Unknown
+    }
 }
 
 impl From<u32> for TpmCapability {
@@ -156,20 +169,19 @@ pub struct TpmsTaggedProperty {
     pub val: u32,
 }
 
+// TODO: Document how tagged unions work here. Basically with typed
+// enums we can collapse 3 structures into 1, greatly reducinging
+// marshaling toil.
 #[derive(Clone, Copy)]
-pub enum TpmuCapabilities {
-    TpmProps{ count: u32, properties: [TpmsTaggedProperty; MAX_TPM_PROPERTIES] },
+pub enum TpmuCapabilityData {
+    TpmProperties(u32, [TpmsTaggedProperty; MAX_TPM_PROPERTIES]),
     Unknown,
 }
 
-impl Default for TpmuCapabilities {
-    fn default() -> Self {TpmuCapabilities::Unknown}
-}
-
-#[derive(Default)]
-pub struct TpmsCapabilityData {
-    pub cap: TpmCapability,
-    pub data: TpmuCapabilities,
+impl Default for TpmuCapabilityData {
+    fn default() -> Self {
+        TpmuCapabilityData::Unknown
+    }
 }
 
 #[derive(Default)]
@@ -180,12 +192,12 @@ pub struct StartupArgs {
 #[derive(Default)]
 pub struct GetCapabilityArgs {
     pub cap: TpmCapability,
-    pub property: u32,
+    pub property: TpmPt,
     pub property_count: u32,
 }
 
 #[derive(Default)]
 pub struct GetCapabilityResponse {
     pub more_data: bool,
-    pub data: TpmsCapabilityData,
+    pub data: TpmuCapabilityData,
 }
